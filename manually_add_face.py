@@ -6,12 +6,12 @@ from vector_operation import get_face_vector
 
 
 label = ""
-p = Path()
+p = Path(r"E:\国产专区")
 
 vector = np.zeros(512)
 count = 0
 
-for file in p.rglob("*"):
+for file in p.rglob("*.jpg"):
     if file.is_dir():
         continue
     if label in file.parts:
