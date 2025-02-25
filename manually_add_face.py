@@ -1,23 +1,37 @@
 from pathlib import Path
+from random import shuffle
 
 import numpy as np
 
 from vector_operation import get_face_vector
+from database_connect import FaceVectorModel, DatabaseConnect
 
-
-label = ""
+db = DatabaseConnect()
 p = Path(r"E:\国产专区")
+file_list = [f for f in p.rglob("*.jpg")]
 
-vector = np.zeros(512)
-count = 0
+while True:
+    label = input("Enter face label: ")
+    vector = np.zeros(512)
+    count = 0
 
-for file in p.rglob("*.jpg"):
-    if file.is_dir():
-        continue
-    if label in file.parts:
-        face_vector = get_face_vector(file)
-        if face_vector is None:
+    shuffle(file_list)
+
+    for file in file_list:
+        if count > 60:
+            break
+        if file.is_dir():
             continue
-        count += 1
-        vector += np.array(face_vector)
-mean_vector = vector / count
+        if label in str(file):
+            face_vector = get_face_vector(file)
+            if face_vector is None:
+                continue
+            count += 1
+            print(file)
+            vector += np.array(face_vector)
+    mean_vector = vector / count
+
+    face = FaceVectorModel(label=label, vector=mean_vector.tolist(), count=count)
+    db.insert_one(face)
+    print(f"insert {label} face vector success,count:{count}")
+

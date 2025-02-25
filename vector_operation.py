@@ -12,6 +12,17 @@ detector.prepare(ctx_id=0, det_size=(640, 640))
 
 def get_face_vector(path: str) -> list[float]|None:
     img = cv2.imdecode(np.fromfile(path, np.uint8), cv2.IMREAD_COLOR)
+    if img is None:
+        return None
+    faces = detector.get(img)
+    if len(faces) == 0:
+        return None
+    return faces[0].normed_embedding
+
+def get_face_vector_from_array(img:list[list[list[int]]]) -> list[float]|None:
+    img = np.array(img)
+    if img is None:
+        return None
     faces = detector.get(img)
     if len(faces) == 0:
         return None
