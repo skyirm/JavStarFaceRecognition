@@ -1,6 +1,7 @@
 import insightface
 import cv2
 import numpy as np
+from insightface.app.common import Face
 
 from database_connect import FaceVectorModel
 
@@ -47,6 +48,9 @@ def get_face_label(faces: list[FaceVectorModel], vector: list) -> tuple[str, flo
             max_label = face.label
     return max_label, max_similarity
 
+def get_result_from_array(img:list[list[list[int]]])->list[Face]|None:
+    img = np.array(img)
+    return detector.get(img)
 
 # if __name__ == "__main__":
 #     img = cv2.imdecode(np.fromfile("./original_images/七嶋舞/wKGkQD_l_2.jpg", np.uint8), cv2.IMREAD_COLOR)
