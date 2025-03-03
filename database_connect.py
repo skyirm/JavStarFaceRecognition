@@ -12,7 +12,7 @@ class FaceVectorModel:
 class DatabaseConnect:
 
     def __init__(self):
-        client = MongoClient("mongodb://skyrim:***REDACTED***@47.103.29.129:27017/")
+        client = MongoClient("mongodb://skyrim:***REDACTED***@***REDACTED***:27017/")
         db = client["skyrim"]
         self. collection = db["face_vector"]
 
