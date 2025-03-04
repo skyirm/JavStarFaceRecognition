@@ -11,6 +11,12 @@ db = DatabaseConnect()
 
 
 def get_face(img):
+
+    results = get_result_from_array(img)
+    if results is None or len(results) == 0:
+        return img, "未检测到人脸"
+
+
     faces = [FaceVectorModel(**face) for face in db.find_all()]
     labels = [item.label for item in faces]
     data = [item.vector for item in faces]
@@ -20,18 +26,15 @@ def get_face(img):
     index.add(np.array(data,dtype=np.float32))
 
     pil_img = Image.fromarray(np.array(img,dtype=np.uint8))
-    portion = int(min(pil_img.size)/30)
+    portion = int(min(pil_img.size)/25)
     draw = ImageDraw.Draw(pil_img)
 
     try:
-        font = ImageFont.truetype("./font/fzheiti.ttf", size=portion)
+        font = ImageFont.truetype("./font/Alibaba-PuHuiTi-Regular.ttf", size=portion)
     except:
         font = ImageFont.load_default()
 
-    results = get_result_from_array(img)
-    if results is None or len(results) == 0:
-        return "未检测到人脸", ""
-
+    result_string = ""
     for result in results:
         vector = result.normed_embedding
         vector = vector / np.linalg.norm(vector)
@@ -51,16 +54,31 @@ def get_face(img):
         text_width = text_bbox[2] - text_bbox[0]  # right - left
         text_height = text_bbox[3] - text_bbox[1]
         draw.rectangle([(x1,y1), (x2,y2)], outline=(255,0,0), width=3)
-        draw.text((x1, y1),name,font=font, fill=(255,0,0))
+        draw.text((x1, y1),name,font=font, fill=(0,0,0))
         print(name)
+        result_string += f"{name} {similarity[0][0]:.4f}\n"
 
-    return pil_img
+    return pil_img, result_string
 
 
-demo = gr.Interface(
-    fn=get_face,
-    inputs=[gr.Image(type="pil")],
-    outputs=[gr.Image(type="pil")],
-)
+with gr.Blocks() as demo:
+    with gr.Row():
+        # 输入图片组件
+        with gr.Column():
+            img_input = gr.Image(label="上传图片", type="numpy")
+        # 输出图片组件
+        with gr.Column():
+            img_output = gr.Image(label="结果")
 
-demo.launch()
+    # 文本输出组件
+    text_output = gr.Textbox(label="识别结果", lines=3, interactive=False)
+
+    # 处理按钮
+    btn = gr.Button("开始识别")
+    btn.click(
+        fn=get_face,
+        inputs=img_input,
+        outputs=[img_output, text_output]
+    )
+
+demo.launch(root_path="/gradio/", server_port=7860)
