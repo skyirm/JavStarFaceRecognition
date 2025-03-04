@@ -81,4 +81,4 @@ with gr.Blocks() as demo:
         outputs=[img_output, text_output]
     )
 
-demo.launch(root_path="/gradio/", server_port=7860)
+demo.launch(root_path="/gradio", server_port=7860)
