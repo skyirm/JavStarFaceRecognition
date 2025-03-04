@@ -23,4 +23,4 @@ for path in p.iterdir():
         vector += np.array(face_vector)
     mean_vector = vector / count
     face_models.append(FaceVectorModel(mean_vector, label, count))
-    db.insert_one(FaceVectorModel(mean_vector.tolist(), label, count))
+    db.replace_one(FaceVectorModel(mean_vector.tolist(), label, count))

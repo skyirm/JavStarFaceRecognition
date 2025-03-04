@@ -33,6 +33,6 @@ while True:
     if count == 0:
         continue
     face = FaceVectorModel(label=label, vector=mean_vector.tolist(), count=count)
-    db.insert_one(face)
+    db.replace_one(face)
     print(f"insert {label} face vector success,count:{count}")
 
