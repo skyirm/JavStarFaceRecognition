@@ -1,8 +1,8 @@
+from pathlib import Path
+
+from PIL import Image
 from mtcnn import MTCNN
 from mtcnn.utils.images import load_image
-from PIL import Image
-import numpy as np
-from pathlib import Path
 
 detector = MTCNN()
 

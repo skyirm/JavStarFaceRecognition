@@ -1,14 +1,12 @@
-from dataclasses import asdict
-from random import choices
-
-import gradio as gr
-import faiss
-from PIL import Image,ImageFont,ImageDraw
 from difflib import get_close_matches
-import numpy as np
 
-from vector_operation import get_face_vector_from_array, get_face_label, get_result_from_array
+import faiss
+import gradio as gr
+import numpy as np
+from PIL import Image, ImageFont, ImageDraw
+
 from database_connect import DatabaseConnect, FaceVectorModel
+from vector_operation import get_result_from_array, get_face_vector_from_array, compare_vector
 
 db = DatabaseConnect()
 
@@ -46,17 +44,9 @@ def get_face(img):
         similarity, position = index.search(np.expand_dims(vector, 0), 1)
 
         name = labels[position[0][0]]
-        # if similarity[0][0] > 0.6:  # 相似度阈值
-        #     name = labels[index[0][0]]
-        # else:
-        #     name = "Unknown"
 
         bbox = result.bbox
         x1, y1, x2, y2 = bbox
-
-        text_bbox = draw.textbbox((0, 0), name, font=font)
-        text_width = text_bbox[2] - text_bbox[0]  # right - left
-        text_height = text_bbox[3] - text_bbox[1]
         draw.rectangle([(x1,y1), (x2,y2)], outline=(255,0,0), width=3)
         draw.text((x1, y1),name,font=font, fill=(0,0,0))
         print(name)
@@ -79,13 +69,30 @@ def give_name_suggestion(input_text):
 def upload_face(name, img):
     if not name or not img:
         return "人脸和名字不能为空"
-    results = get_result_from_array(img)
-    if results is None or len(results) == 0:
+    results = get_face_vector_from_array(img)
+    if len(results) == 0:
         return "检测不到人脸"
-    vector = results[0].normed_embedding
-    face = FaceVectorModel(vector=vector.tolist(), count=1,label=name)
+    if len(results) >1:
+        return "检测到多个人脸，无法上传"
+    face = FaceVectorModel(vector=results[0], count=1,label=name)
     db.update_one(face)
     return f"上传{name}成功"
+
+def compare_faces(img1, img2):
+    if not img1 or not img2:
+        return "缺少图片"
+    results_1 = get_face_vector_from_array(img1)
+    if not results_1:
+        return "图片1检测不到人脸"
+    if len(results_1) >1:
+        return "图片1有多个人脸"
+    results_2 = get_face_vector_from_array(img2)
+    if not results_2:
+        return "图片2检测不到人脸"
+    if len(results_2) >1:
+        return "图片2有多个人脸"
+    result = compare_vector(results_1[0], results_2[0])
+    return f"相似度{result:2f}"
 
 with gr.Blocks() as demo:
     with gr.Tab("人脸识别"):
@@ -108,7 +115,6 @@ with gr.Blocks() as demo:
             outputs=[img_output, text_output]
         )
 
-
     with gr.Tab("上传人脸"):
         img_upload = gr.Image(label="上传图片", type="pil")
         name_upload = gr.Textbox(label="输入名字")
@@ -128,6 +134,26 @@ with gr.Blocks() as demo:
             fn=upload_face,
             inputs=[name_upload, img_upload],
             outputs=upload_result
+        )
+
+    with gr.Tab("人脸比对"):
+        with gr.Row():
+            # 输入图片组件
+            with gr.Column():
+                img_1 = gr.Image(label="图片1", type="pil")
+            # 输出图片组件
+            with gr.Column():
+                img_2 = gr.Image(label="图片2", type="pil")
+        with gr.Row():
+            with gr.Column():
+                compare_result_output = gr.Textbox(label="比对结果")
+            with gr.Column():
+                compare_btn = gr.Button("比较")
+
+        compare_btn.click(
+            fn=compare_faces,
+            inputs=[img_1, img_2],
+            outputs=compare_result_output,
         )
 
 
