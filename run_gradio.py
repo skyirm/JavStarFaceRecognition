@@ -36,7 +36,7 @@ def get_face(img):
         draw.rectangle([(x1, y1), (x2, y2)], outline=(255, 0, 0), width=3)
         draw.text((x1, y1), name, font=font, fill=(0, 0, 0))
         print(name)
-        result_string += f"{name} {similarity[0][0]:.4f}\n"
+        result_string += f"{name} {similarity:.4f}\n"
 
     return pil_img, result_string
 
