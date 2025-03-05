@@ -4,12 +4,14 @@ import gradio as gr
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
 
+from logger import get_logger
 from model import FaceVectorModel
 from postgresql_connect import PostgresConnection
 from vector_operation import get_result_from_array, get_face_vector_from_array, compare_vector
 
 db = PostgresConnection()
 
+logger = get_logger(__name__)
 
 def get_face(img):
     results = get_result_from_array(img)
@@ -23,6 +25,7 @@ def get_face(img):
     try:
         font = ImageFont.truetype("./font/Alibaba-PuHuiTi-Regular.ttf", size=portion)
     except OSError:
+        logger.warn("Cannot find font file")
         font = ImageFont.load_default()
 
     result_string = ""
@@ -35,7 +38,7 @@ def get_face(img):
         x1, y1, x2, y2 = bbox
         draw.rectangle([(x1, y1), (x2, y2)], outline=(255, 0, 0), width=3)
         draw.text((x1, y1), name, font=font, fill=(0, 0, 0))
-        print(name)
+        logger.info("Find %s with similarity %s", name, similarity)
         result_string += f"{name} {similarity:.4f}\n"
 
     return pil_img, result_string
@@ -62,6 +65,7 @@ def upload_face(name, img):
         return "检测到多个人脸，无法上传"
     face = FaceVectorModel(vector=results[0], count=1, label=name)
     db.update_one(face)
+    logger.info("Upload %s", name)
     return f"上传{name}成功"
 
 
@@ -143,5 +147,5 @@ with gr.Blocks() as demo:
             inputs=[img_1, img_2],
             outputs=compare_result_output,
         )
-
-demo.launch(root_path="/gradio", server_port=7860, max_file_size="50MB")
+logger.info("Start gradio server")
+demo.launch(root_path="/gradio", server_port=7860, max_file_size="50MB", show_error=True)

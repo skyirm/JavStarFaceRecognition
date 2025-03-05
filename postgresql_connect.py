@@ -1,8 +1,11 @@
 import numpy as np
 from peewee import Model, PostgresqlDatabase,TextField,IntegerField
 from pgvector.peewee import VectorField
+
+from logger import get_logger
 from model import FaceVectorModel
 
+logger = get_logger(__name__)
 
 db = PostgresqlDatabase(
             'skyrim',
@@ -24,7 +27,10 @@ class Item(Model):
 class PostgresConnection:
     def __init__(self):
         self.db = db
-        self.db.connect()
+        try:
+            self.db.connect()
+        except:
+            logger.critical("Cannot connect to database")
         self.Item = Item
 
     def insert_one(self, data:FaceVectorModel):
@@ -36,6 +42,7 @@ class PostgresConnection:
             return
         else:
             self.Item.create(name=data.label,vector=data.vector,count=data.count)
+        logger.info("Insert %s into database", data.label)
 
     def find_one_by_name(self, data:FaceVectorModel):
         record =  self.Item.get_or_none(self.Item.name == data.label)
@@ -48,12 +55,13 @@ class PostgresConnection:
         record = self.find_one_by_name(data)
         if record:
             count = record.count+data.count
-            vector = (np.array(record.vector)*record.count + np.array(data.vector)*data.count)/(record.count+data.count).tolist()
+            vector = ((np.array(record.vector)*record.count + np.array(data.vector)*data.count)/(record.count+data.count)).tolist()
             record.vector = vector
             record.count = count
             record.save()
         else:
             self.Item.create(name=data.label,vector=data.vector,count=data.count)
+        logger.info("Update %s in database", data.label)
 
     def find_most_similar(self,vector:list[float]):
         similar_items = (

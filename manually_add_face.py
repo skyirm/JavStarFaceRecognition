@@ -3,11 +3,13 @@ from random import shuffle
 
 import numpy as np
 
+from logger import get_logger
 from model import FaceVectorModel
 from postgresql_connect import PostgresConnection
 from vector_operation import get_face_vector
 
 db = PostgresConnection()
+logger = get_logger(__name__)
 p = Path(r"E:\国产专区")
 file_list = [f for f in p.rglob("*.jpg")]
 
@@ -28,12 +30,13 @@ while True:
             if face_vector is None:
                 continue
             count += 1
-            print(file)
+            logger.info("Add face for label %s from %s", label, file)
             vector += np.array(face_vector)
     mean_vector = vector / count
     if count == 0:
+        logger.warning("No face found for label %s", label)
         continue
     face = FaceVectorModel(label=label, vector=mean_vector.tolist(), count=count)
     db.insert_one(face)
-    print(f"insert {label} face vector success,count:{count}")
+    logger.info("Add %s faces for label %s", count, label)
 

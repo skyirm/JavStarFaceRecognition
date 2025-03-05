@@ -31,7 +31,7 @@ def get_face_vector_from_array(img:list[list[list[int]]]) -> list[list[float]]|N
 def compare_vector(vector1: list, vector2: list) -> float:
     vector1 = np.array(vector1)
     vector2 = np.array(vector2)
-    return np.dot(vector1, vector2) / (
+    return 1 - np.dot(vector1, vector2) / (
         np.linalg.norm(vector1) * np.linalg.norm(vector2)
     )
 
