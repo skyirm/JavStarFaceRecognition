@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from insightface.app.common import Face
 
-from database_connect import FaceVectorModel
+from mongo_connect import FaceVectorModel
 
 detector = insightface.app.FaceAnalysis(
     name="buffalo_l", providers=["CUDAExecutionProvider","CPUExecutionProvider"]
@@ -25,7 +25,7 @@ def get_face_vector_from_array(img:list[list[list[int]]]) -> list[list[float]]|N
     if img is None:
         return None
     faces = detector.get(img)
-    return [face.normed_embedding for face in faces]
+    return [face.normed_embedding.tolist() for face in faces]
 
 
 def compare_vector(vector1: list, vector2: list) -> float:

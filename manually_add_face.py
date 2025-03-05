@@ -3,10 +3,11 @@ from random import shuffle
 
 import numpy as np
 
+from model import FaceVectorModel
+from postgresql_connect import PostgresConnection
 from vector_operation import get_face_vector
-from database_connect import FaceVectorModel, DatabaseConnect
 
-db = DatabaseConnect()
+db = PostgresConnection()
 p = Path(r"E:\国产专区")
 file_list = [f for f in p.rglob("*.jpg")]
 
@@ -33,6 +34,6 @@ while True:
     if count == 0:
         continue
     face = FaceVectorModel(label=label, vector=mean_vector.tolist(), count=count)
-    db.replace_one(face)
+    db.insert_one(face)
     print(f"insert {label} face vector success,count:{count}")
 

@@ -1,22 +1,19 @@
-from pymongo import MongoClient
-from dataclasses import dataclass,asdict
+from dataclasses import asdict
+
 import numpy as np
+from pymongo import MongoClient
 
-@dataclass
-class FaceVectorModel:
-    vector: list
-    label:str
-    count:int
+from model import FaceVectorModel
 
 
-class DatabaseConnect:
+class MongoDBConnection:
 
     def __init__(self):
         client = MongoClient("mongodb://skyrim:***REDACTED***@***REDACTED***:27017/")
         db = client["skyrim"]
         self. collection = db["face_vector"]
 
-    def replace_one(self, data:FaceVectorModel):
+    def insert_one(self, data:FaceVectorModel):
         record = self.find_one({"label":data.label})
         if record:
             self.collection.update_one({"label":data.label},{"$set":{"vector":data.vector,"count":data.count}})
