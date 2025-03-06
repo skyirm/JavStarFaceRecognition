@@ -13,6 +13,18 @@ db = PostgresConnection()
 
 logger = get_logger(__name__)
 
+def db_connection_check(func):
+    def wrapper(*args, **kwargs):
+        if db.db.is_closed():
+            logger.warning("数据库连接已断开，尝试重新连接")
+            if db.db.connect():
+                logger.info("数据库连接成功")
+            else:
+                logger.error("数据库连接失败")
+        return func(*args, **kwargs)
+    return wrapper
+
+@db_connection_check
 def get_face(img):
     results = get_result_from_array(img)
     if results is None or len(results) == 0:
@@ -43,7 +55,7 @@ def get_face(img):
 
     return pil_img, result_string
 
-
+@db_connection_check
 def give_name_suggestion(input_text):
     if not input_text:
         return gr.update(elem_id="name_suggestion", choices=[])
@@ -54,7 +66,7 @@ def give_name_suggestion(input_text):
         return gr.update(elem_id="name_suggestion", choices=matches)
     return gr.update(elem_id="name_suggestion", choices=[])
 
-
+@db_connection_check
 def upload_face(name, img):
     if not name or not img:
         return "人脸和名字不能为空"
