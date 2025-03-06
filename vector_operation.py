@@ -6,24 +6,28 @@ from insightface.app.common import Face
 from mongo_connect import FaceVectorModel
 
 detector = insightface.app.FaceAnalysis(
-    name="buffalo_l", providers=["CUDAExecutionProvider","CPUExecutionProvider"]
+    name="antelopev2", providers=["CUDAExecutionProvider","CPUExecutionProvider"]
 )
-detector.prepare(ctx_id=0, det_size=(640, 640))
+detector.prepare(ctx_id=0, det_size=(640, 640) )
 
 
-def get_face_vector(path: str) -> list[float]|None:
+def get_face_vector_from_file(path: str) -> list[float] | None:
     img = cv2.imdecode(np.fromfile(path, np.uint8), cv2.IMREAD_COLOR)
     if img is None:
         return None
     faces = detector.get(img)
     if len(faces) == 0:
         return None
+    if len(faces) > 1:
+        return None
+    if faces[0]["det_score"]<0.75:
+        return None
     return faces[0].normed_embedding
 
 def get_face_vector_from_array(img:list[list[list[int]]]) -> list[list[float]]|None:
-    img = np.array(img)
     if img is None:
         return None
+    img = np.array(img)
     faces = detector.get(img)
     return [face.normed_embedding.tolist() for face in faces]
 
@@ -47,10 +51,12 @@ def get_face_label(faces: list[FaceVectorModel], vector: list) -> tuple[str, flo
     return max_label, max_similarity
 
 def get_result_from_array(img:list[list[list[int]]])->list[Face]|None:
+    if img is None:
+        return None
     img = np.array(img)
     return detector.get(img)
 
-# if __name__ == "__main__":
-#     img = cv2.imdecode(np.fromfile("./original_images/七嶋舞/wKGkQD_l_2.jpg", np.uint8), cv2.IMREAD_COLOR)
-#     result = detector.get(img)
-#     print(result)
+if __name__ == "__main__":
+    image = cv2.imdecode(np.fromfile("./original_images/麻里梨夏/e88k9r_l_8.jpg", np.uint8), cv2.IMREAD_COLOR)
+    result = detector.get(image)
+    print(result)

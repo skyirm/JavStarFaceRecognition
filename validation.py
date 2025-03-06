@@ -1,6 +1,6 @@
 from pathlib import Path
 from mongo_connect import FaceVectorModel
-from vector_operation import get_face_vector,get_face_label
+from vector_operation import get_face_vector_from_file,get_face_label
 from mongo_connect import MongoDBConnection
 
 
@@ -10,7 +10,7 @@ def validate_result(face_models:list[FaceVectorModel]):
         if file.is_dir():
             continue
         target_label = file.parent.name
-        vector = get_face_vector(file)
+        vector = get_face_vector_from_file(file)
         if vector is None:
             continue
         label, probability = get_face_label(face_models, vector)

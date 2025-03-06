@@ -6,7 +6,7 @@ import numpy as np
 from logger import get_logger
 from model import FaceVectorModel
 from postgresql_connect import PostgresConnection
-from vector_operation import get_face_vector
+from vector_operation import get_face_vector_from_file
 
 db = PostgresConnection()
 logger = get_logger(__name__)
@@ -26,7 +26,7 @@ while True:
         if file.is_dir():
             continue
         if label in str(file):
-            face_vector = get_face_vector(file)
+            face_vector = get_face_vector_from_file(file)
             if face_vector is None:
                 continue
             count += 1

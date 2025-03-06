@@ -1,3 +1,4 @@
+import io
 from difflib import get_close_matches
 
 import gradio as gr
@@ -43,7 +44,12 @@ def get_face(img):
         logger.info("Find %s with similarity %s", name, similarity)
         result_string += f"{name} {similarity:.4f}\n"
 
-    return pil_img, result_string
+    bytes_io = io.BytesIO()
+    pil_img.save(bytes_io, format="JPEG",quality=60)
+    bytes_io.seek(0)
+    compressed_img = Image.open(bytes_io)
+
+    return compressed_img, result_string
 
 @db.check_connection
 def give_name_suggestion(input_text):
@@ -60,12 +66,14 @@ def give_name_suggestion(input_text):
 def upload_face(name, img):
     if not name or not img:
         raise gr.Error("人脸和名字不能为空",duration=2)
-    results = get_face_vector_from_array(img)
+    results = get_result_from_array(img)
     if len(results) == 0:
         raise gr.Error("检测不到人脸",duration=2)
     if len(results) > 1:
         raise gr.Error("检测到多个人脸，无法上传", duration=2)
-    face = FaceVectorModel(vector=results[0], count=1, label=name)
+    if results[0].det_socre<0.75:
+        raise gr.Error("人脸置信度较低", duration=2)
+    face = FaceVectorModel(vector=results[0].normed_embedding.tolist(), count=1, label=name)
     db.update_one(face)
     logger.info("Upload %s", name)
     raise gr.Info(f"{name} 上传成功", duration=3)
