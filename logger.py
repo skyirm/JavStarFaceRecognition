@@ -1,8 +1,12 @@
 import logging
-from colorama import init
+import platform
+
+system = platform.system()
+if system == "Windows":
+    from colorama import init
+    init(autoreset=True)
 
 
-init(autoreset=True)
 
 COLORS = {
     "DEBUG": "\033[36m",    # 青色
