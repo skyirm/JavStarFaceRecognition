@@ -77,6 +77,17 @@ class PostgresConnection:
         records =  self.Item.select( self.Item.name)
         return [record.name for record in records]
 
+    def check_connection(self, func):
+        def wrapper(*args, **kwargs):
+            if self.db.is_closed():
+                logger.warning("数据库连接已断开，尝试重新连接")
+                if self.db.connect():
+                    logger.info("数据库连接成功")
+                else:
+                    logger.error("数据库连接失败")
+            return func(*args, **kwargs)
+        return wrapper
+
 
 if __name__ == '__main__':
     db = PostgresConnection()
