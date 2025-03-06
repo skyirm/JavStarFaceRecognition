@@ -69,16 +69,16 @@ def give_name_suggestion(input_text):
 @db_connection_check
 def upload_face(name, img):
     if not name or not img:
-        return "人脸和名字不能为空"
+        raise gr.Error("人脸和名字不能为空",duration=2)
     results = get_face_vector_from_array(img)
     if len(results) == 0:
-        return "检测不到人脸"
+        raise gr.Error("检测不到人脸",duration=2)
     if len(results) > 1:
-        return "检测到多个人脸，无法上传"
+        raise gr.Error("检测到多个人脸，无法上传", duration=2)
     face = FaceVectorModel(vector=results[0], count=1, label=name)
     db.update_one(face)
     logger.info("Upload %s", name)
-    return f"上传{name}成功"
+    raise gr.Info(f"{name} 上传成功", duration=3)
 
 
 def compare_faces(img1, img2):
@@ -123,7 +123,6 @@ with gr.Blocks() as demo:
         img_upload = gr.Image(label="上传图片", type="pil")
         name_upload = gr.Textbox(label="输入名字")
         name_upload_suggestion = gr.Radio(choices=[], label="推荐使用", elem_id="name_suggestion")
-        upload_result = gr.Textbox(label="上传结果")
         btn_upload = gr.Button("上传")
 
         name_upload.input(
@@ -137,7 +136,6 @@ with gr.Blocks() as demo:
         btn_upload.click(
             fn=upload_face,
             inputs=[name_upload, img_upload],
-            outputs=upload_result
         )
 
     with gr.Tab("人脸比对"):
@@ -160,4 +158,5 @@ with gr.Blocks() as demo:
             outputs=compare_result_output,
         )
 logger.info("Start gradio server")
+demo.queue(default_concurrency_limit=2)
 demo.launch(root_path="/gradio", server_port=7860, max_file_size="50MB", show_error=True)

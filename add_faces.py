@@ -26,3 +26,4 @@ for path in p.iterdir():
     mean_vector = vector / count
     face_models.append(FaceVectorModel(mean_vector, label, count))
     db.insert_one(FaceVectorModel(mean_vector.tolist(), label, count))
+    print(f"{label} has been added.")
