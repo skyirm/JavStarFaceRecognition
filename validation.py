@@ -1,23 +1,30 @@
 from pathlib import Path
-from mongo_connect import FaceVectorModel
-from vector_operation import get_face_vector_from_file,get_face_label
-from mongo_connect import MongoDBConnection
 
+import numpy as np
 
-def validate_result(face_models:list[FaceVectorModel]):
-    test = Path.cwd() / "validation_images"
-    for file in test.rglob("*"):
-        if file.is_dir():
-            continue
-        target_label = file.parent.name
+from postgresql_connect import PostgresConnection
+from vector_operation import get_face_vector_from_file, get_face_label
+
+db = PostgresConnection()
+
+thresholds = list(np.arange(0.2, 1.01, 0.05))
+name_list = db.find_all_name()
+
+p= Path().cwd()/"validation_images"
+
+for thresholds in thresholds:
+    total_count = 0.
+    right_count = 0.
+    for file in p.rglob("*.jpg"):
+        name = file.parent
         vector = get_face_vector_from_file(file)
-        if vector is None:
-            continue
-        label, probability = get_face_label(face_models, vector)
-        print(target_label, f"预测结果： {label}, {probability}")
+        predict_name, score = db.find_most_similar(vector)
+        if score > thresholds:
+            predict_name = "unknown"
+        if name in name_list and predict_name == name:
+            right_count += 1
+        if name not in name_list and predict_name == "unknown":
+            right_count += 1
+        total_count += 1
 
-db = MongoDBConnection()
-results = db.find_all()
-faces = [FaceVectorModel(**result) for result in results]
-
-validate_result(faces)
+    print(f"thresholds: {thresholds}, right_count: {right_count}, total_count: {total_count}, accuracy: {right_count/total_count}")
