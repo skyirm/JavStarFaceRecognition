@@ -71,7 +71,7 @@ def upload_face(name, img):
         raise gr.Error("检测不到人脸",duration=2)
     if len(results) > 1:
         raise gr.Error("检测到多个人脸，无法上传", duration=2)
-    if results[0].det_socre<0.75:
+    if results[0]["det_score"]<0.75:
         raise gr.Error("人脸置信度较低", duration=2)
     face = FaceVectorModel(vector=results[0].normed_embedding.tolist(), count=1, label=name)
     db.update_one(face)
