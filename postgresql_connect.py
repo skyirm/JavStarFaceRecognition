@@ -39,10 +39,9 @@ class PostgresConnection:
             record.vector = data.vector
             record.count = data.count
             record.save()
-            return
         else:
             self.Item.create(name=data.label,vector=data.vector,count=data.count)
-        logger.info("Insert %s into database", data.label)
+        logger.info("Insert %s into database, count %s", data.label, data.count)
 
     def find_one_by_name(self, data:FaceVectorModel):
         record =  self.Item.get_or_none(self.Item.name == data.label)

@@ -3,10 +3,7 @@ import insightface
 import cv2
 import numpy as np
 
-detector = insightface.app.FaceAnalysis(
-    name="buffalo_l", providers=['CUDAExecutionProvider',"CPUExecutionProvider"]
-)
-detector.prepare(ctx_id=0, det_size=(640, 640))
+from vector_operation import get_face_vector_from_file
 
 
 def drop_image():
@@ -14,14 +11,10 @@ def drop_image():
     for file in p.rglob("*.jpg"):
         if file.is_dir():
             continue
-        img = cv2.imdecode(np.fromfile(file, np.uint8), cv2.IMREAD_COLOR)
-        faces = detector.get(img)
-        if len(faces) == 0:
+        face = get_face_vector_from_file(str(file))
+        if face is None:
+            print(f"drop {file}")
             file.unlink()
-            print(f"{file} has been deleted.")
-        if len(faces) > 1:
-            file.unlink()
-            print(f"{file} has been deleted.")
 
 
 drop_image()

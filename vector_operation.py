@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from insightface.app.common import Face
 
+from config import FACE_DETECT_THRESHOLD
 from mongo_connect import FaceVectorModel
 
 detector = insightface.app.FaceAnalysis(
@@ -20,7 +21,7 @@ def get_face_vector_from_file(path: str) -> list[float] | None:
         return None
     if len(faces) > 1:
         return None
-    if faces[0]["det_score"]<0.75:
+    if faces[0]["det_score"]<FACE_DETECT_THRESHOLD:
         return None
     return faces[0].normed_embedding
 

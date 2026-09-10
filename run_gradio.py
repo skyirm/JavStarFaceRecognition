@@ -5,6 +5,7 @@ import gradio as gr
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
 
+from config import FACE_DETECT_THRESHOLD, FACE_DET_SCORE_THRESHOLD
 from logger import get_logger
 from model import FaceVectorModel
 from postgresql_connect import PostgresConnection
@@ -36,6 +37,9 @@ def get_face(img):
         vector = result.normed_embedding
 
         name, similarity = db.find_most_similar(vector)
+        if similarity > FACE_DET_SCORE_THRESHOLD:
+            name = "Unknown"
+
 
         bbox = result.bbox
         x1, y1, x2, y2 = bbox
@@ -71,7 +75,7 @@ def upload_face(name, img):
         raise gr.Error("检测不到人脸",duration=2)
     if len(results) > 1:
         raise gr.Error("检测到多个人脸，无法上传", duration=2)
-    if results[0]["det_score"]<0.75:
+    if results[0]["det_score"]<FACE_DETECT_THRESHOLD:
         raise gr.Error("人脸置信度较低", duration=2)
     face = FaceVectorModel(vector=results[0].normed_embedding.tolist(), count=1, label=name)
     db.update_one(face)
