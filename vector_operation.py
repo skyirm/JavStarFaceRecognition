@@ -1,63 +1,55 @@
-import insightface
 import cv2
 import numpy as np
-from insightface.app.common import Face
+import onnxruntime as ort
+from insightface.app import FaceAnalysis
+from insightface.utils.face_align import norm_crop
 
+import adaface
 from config import FACE_DETECT_THRESHOLD
-from mongo_connect import FaceVectorModel
 
-detector = insightface.app.FaceAnalysis(
-    name="antelopev2", providers=["CUDAExecutionProvider","CPUExecutionProvider"]
-)
-detector.prepare(ctx_id=0, det_size=(640, 640) )
+_available = set(ort.get_available_providers())
+_providers = [p for p in ["CUDAExecutionProvider", "CPUExecutionProvider"] if p in _available]
+
+detector = FaceAnalysis(name="antelopev2", allowed_modules=["detection"], providers=_providers)
+detector.prepare(ctx_id=0, det_size=(640, 640))
 
 
-def get_face_vector_from_file(path: str) -> list[float] | None:
-    img = cv2.imdecode(np.fromfile(path, np.uint8), cv2.IMREAD_COLOR)
+def _face_vector(img: np.ndarray, face) -> np.ndarray:
+    aligned = norm_crop(img, face.kps, image_size=112)
+    return adaface.get(aligned)
+
+
+def get_face_vector_from_file(path: str) -> np.ndarray | None:
+    img = _imread_unicode(path)
     if img is None:
         return None
     faces = detector.get(img)
-    if len(faces) == 0:
+    if len(faces) != 1 or faces[0]["det_score"] < FACE_DETECT_THRESHOLD:
         return None
-    if len(faces) > 1:
-        return None
-    if faces[0]["det_score"]<FACE_DETECT_THRESHOLD:
-        return None
-    return faces[0].normed_embedding
+    return _face_vector(img, faces[0])
 
-def get_face_vector_from_array(img:list[list[list[int]]]) -> list[list[float]]|None:
+
+def get_face_vector_from_array(img) -> list[np.ndarray] | None:
     if img is None:
         return None
-    img = np.array(img)
+    img = np.ascontiguousarray(img, dtype=np.uint8)
     faces = detector.get(img)
-    return [face.normed_embedding.tolist() for face in faces]
+    return [_face_vector(img, face) for face in faces]
 
 
-def compare_vector(vector1: list, vector2: list) -> float:
-    vector1 = np.array(vector1)
-    vector2 = np.array(vector2)
-    return 1 - np.dot(vector1, vector2) / (
-        np.linalg.norm(vector1) * np.linalg.norm(vector2)
-    )
+def compare_vector(vector1, vector2) -> float:
+    """Cosine similarity (higher = more similar). Vectors must be L2-normalized."""
+    return float(np.dot(vector1, vector2))
 
 
-def get_face_label(faces: list[FaceVectorModel], vector: list) -> tuple[str, float]:
-    max_similarity = 0
-    max_label = ""
-    for face in faces:
-        similarity = compare_vector(face.vector, vector)
-        if similarity > max_similarity:
-            max_similarity = similarity
-            max_label = face.label
-    return max_label, max_similarity
-
-def get_result_from_array(img:list[list[list[int]]])->list[Face]|None:
+def get_result_from_array(img):
     if img is None:
         return None
-    img = np.array(img)
+    img = np.ascontiguousarray(img, dtype=np.uint8)
     return detector.get(img)
 
-if __name__ == "__main__":
-    image = cv2.imdecode(np.fromfile("./original_images/麻里梨夏/e88k9r_l_8.jpg", np.uint8), cv2.IMREAD_COLOR)
-    result = detector.get(image)
-    print(result)
+
+def _imread_unicode(path: str):
+    """imdecode-based imread that supports non-ASCII paths on Windows."""
+    data = np.fromfile(path, np.uint8)
+    return cv2.imdecode(data, cv2.IMREAD_COLOR)
