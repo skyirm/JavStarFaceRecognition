@@ -1,0 +1,23 @@
+- generic [ref=e3]:
+  - heading "人脸识别" [level=1] [ref=e4]
+  - navigation [ref=e5]:
+    - button "人脸识别" [ref=e6] [cursor=pointer]
+    - button "上传人脸" [ref=e7] [cursor=pointer]
+    - button "人脸比对" [ref=e8] [cursor=pointer]
+    - button "人脸库管理" [ref=e9] [cursor=pointer]
+  - generic [ref=e34]:
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - text: 图片 1
+          - button "图片 1" [ref=e38]
+        - img "预览" [ref=e43]
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - text: 图片 2
+          - button "图片 2" [ref=e41]
+        - img "预览" [ref=e44]
+    - button "比较" [ref=e42] [cursor=pointer]
+    - generic [ref=e45]:
+      - generic [ref=e46]: 比对结果
+      - generic [ref=e47]: 65.7%

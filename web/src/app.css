@@ -1,0 +1,183 @@
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  color: #1f2937;
+  background: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 8px 0 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  padding: 8px 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.tabs button.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.row > * {
+  flex: 1;
+  min-width: 260px;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+input[type='text'] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+button.primary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+button.primary:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+button.danger {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.picker img,
+canvas.result {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.msg {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.msg.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.msg.err {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+.hits li {
+  padding: 4px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.sim {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.suggestions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.suggestions button {
+  padding: 4px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #f9fafb;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+table.persons {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+table.persons th,
+table.persons td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.similarity-big {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2563eb;
+}
