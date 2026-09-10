@@ -18,28 +18,30 @@ tools/          ONNX 导出脚本、旧 PG 迁移清单工具
 
 ## 部署（离线可用，无任何远程数据库依赖）
 
-1. 安装依赖：`pip install -r requirements.txt`
+包管理使用 [uv](https://docs.astral.sh/uv/)：
+
+1. 安装依赖（自动创建 .venv）：`uv sync`（生产环境去 dev 组：`uv sync --no-dev`）
    （Windows 上 insightface 需 VS Build Tools 编译）
 2. 放置模型文件：
    - `models/adaface_ir101_webface4m.onnx`（来源与导出方法见 `tools/export_adaface_onnx.py` 文档注释）
    - insightface 模型包 `antelopev2` 放在 `~/.insightface/models/`（只需检测模型）
 3. 前端构建（仅开发机需要 Node）：`cd web && npm install && npm run build`
-4. 启动：`python -m uvicorn app:app --host 0.0.0.0 --port 7860`
-   - 反代子路径部署：`uvicorn app:app --root-path /gradio`
+4. 启动：`uv run uvicorn app:app --host 0.0.0.0 --port 7860`
+   - 反代子路径部署：`uv run uvicorn app:app --root-path /gradio`
 
 ## 建库与验证（从旧 PostgreSQL 迁移）
 
-1. `python validation.py --baseline old.json` 先记录旧方案基线（可选）
-2. `python tools/migrate_pg_names.py export --out pg_names.txt`（凭据走环境变量）
-3. `python tools/migrate_pg_names.py diff --names pg_names.txt` 输出缺图人员清单，**补齐 original_images 后再建库**
-4. `python add_faces.py`（v2：每张注册图一条向量）
-5. `python validation.py` 扫阈值，按 `validation_result.json` 确认 `config.SIMILARITY_THRESHOLD`
+1. `uv run python validation.py --baseline old.json` 先记录旧方案基线（可选）
+2. `uv run python tools/migrate_pg_names.py export --out pg_names.txt`（凭据走环境变量）
+3. `uv run python tools/migrate_pg_names.py diff --names pg_names.txt` 输出缺图人员清单，**补齐 original_images 后再建库**
+4. `uv run python add_faces.py`（v2：每张注册图一条向量）
+5. `uv run python validation.py` 扫阈值，按 `validation_result.json` 确认 `config.SIMILARITY_THRESHOLD`
 
 ## 测试
 
 ```
-pip install -r requirements-dev.txt
-pytest tests -v
+uv sync --dev
+uv run pytest tests -v
 ```
 
 ## 历史
