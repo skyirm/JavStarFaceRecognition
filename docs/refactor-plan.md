@@ -1,6 +1,6 @@
 # 修改方案：识别模型升级 AdaFace IR-101 + 数据库迁移 SQLite
 
-> 状态：**已定稿**（讨论日期：2026-09-11，全部待定项已拍板）
+> 状态：**已实施**（2026-09-11 讨论定稿，同日完成实施与验收，见 §9）
 > 范围：人脸识别服务（后端 FastAPI + 前端 Svelte，及配套脚本）
 
 ---
@@ -170,7 +170,6 @@ POST   /api/compare          两张图 → {similarity}
 ---
 
 ## 8. 工作量估算
-
 | 事项 | 估算 |
 |---|---|
 | adaface.py + vector_operation.py 改造 | 0.5 天（含权重获取/验证） |
@@ -180,3 +179,20 @@ POST   /api/compare          两张图 → {similarity}
 | 前端 Svelte 工程（4 页面）+ API 联调 | 1 天 |
 
 合计约 3 个工作日（权重来源顺利的前提下）。
+
+---
+
+## 9. 实施结果（2026-09-11）
+
+| 事项 | 结果 |
+|---|---|
+| 权重获取 | 未走 gdrive/自建导出绕路：发现官方作者在 HF 的镜像仓库 minchul/cvlface_adaface_ir101_webface4m，直接取官方 .pth + 官方模型定义自导出 |
+| ONNX 导出 | 260.7MB，opset 17，动态 batch；torch vs onnxruntime 余弦 = 1.000000；与社区转换版交叉对拍 = 1.000000 |
+| 预处理 | 官方 README 确认：RGB + (x/255-0.5)/0.5；对齐用 insightface norm_crop(112) |
+| 语义 | 已统一为相似度（越大越相似），阈值判断 sim < T → Unknown |
+| 存储 | SQLite v2 已实现（一人多行、groupby-max、矩阵缓存、删除同步重建） |
+| 前端 | Svelte 5 + Vite，构建产物 45.7KB JS（gzip 18KB）；FastAPI StaticFiles 托管 |
+| 测试 | pytest 17/17 通过（管道 4 + sqlite 6 + API 7）；另通过真实浏览器端到端验证四个页面（并修掉一个删除提示被刷新吞掉的 UI bug） |
+| 内存 | 服务进程工作集 704MB（推理前后无增长，arena 关闭生效）；原 gradio 方案 >1.5GB |
+| 延迟 | 单图识别 CPU 506~1053ms（开发机，含首次 session 初始化），目标 ≤3s ✓ |
+| 遗留 | ① original_images 在部署机，需按 §5 流程补齐缺图后重跑 add_faces；② 旧 PG 备份下线、SIMILARITY_THRESHOLD 按部署机 validation 结果调整；③ config 中密码已在代码层移除，但 git 历史仍可见，需人工轮换 |
