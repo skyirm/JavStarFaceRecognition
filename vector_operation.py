@@ -37,6 +37,12 @@ def get_face_vector_from_array(img) -> list[np.ndarray] | None:
     return [_face_vector(img, face) for face in faces]
 
 
+def get_vectors_from_faces(img: np.ndarray, faces) -> list[np.ndarray]:
+    """Vectors for faces detected on the same image (det -> norm_crop -> AdaFace)."""
+    img = np.ascontiguousarray(img, dtype=np.uint8)
+    return [_face_vector(img, face) for face in faces]
+
+
 def compare_vector(vector1, vector2) -> float:
     """Cosine similarity (higher = more similar). Vectors must be L2-normalized."""
     return float(np.dot(vector1, vector2))
