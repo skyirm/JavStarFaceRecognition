@@ -51,7 +51,9 @@ async def require_admin(token: str | None = Security(_admin_header)):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Loading detection model...")
-    from vector_operation import detector  # noqa: F401  (SCRFD loads at import)
+    from vector_operation import adaface, detector  # noqa: F401  (loads at import/lifespan)
+
+    adaface.warmup()
 
     if not os.environ.get("ADMIN_TOKEN"):
         logger.warning("ADMIN_TOKEN not set: face library management API is UNPROTECTED")
@@ -252,9 +254,3 @@ async def compare_faces(file1: UploadFile = File(...), file2: UploadFile = File(
 _web_dist = Path(__file__).parent / "web" / "dist"
 if _web_dist.is_dir():
     app.mount("/", StaticFiles(directory=_web_dist, html=True), name="web")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=7860)

@@ -25,7 +25,12 @@ tools/          ONNX 导出脚本、旧 PG 迁移清单工具
 1. 安装依赖（自动创建 .venv）：`uv sync`（生产环境去 dev 组：`uv sync --no-dev`）
    （Windows 上 insightface 需 VS Build Tools 编译）
 2. 放置模型文件：
-   - `models/adaface_ir101_webface4m.onnx`（来源与导出方法见 `tools/export_adaface_onnx.py` 文档注释）
+   - `models/adaface_ir101_webface4m.onnx`（来源与导出方法见 `tools/export_adaface_onnx.py` 文档注释）。
+     支持启动时自动下载：设置环境变量 `ADAFACE_ONNX_URL`（缺失时下载，`ADAFACE_SHA256` 校验完整性）。
+     已验证可用的现成地址（社区转换版，与本仓库导出权重 cos=1.0 等价，国内服务器建议 hf-mirror）：
+     `https://hf-mirror.com/Evn9172/cvlface_adaface_ir101_webface4m_onnx/resolve/main/adaface_ir101.onnx`
+     （海外把域名换成 `huggingface.com` 同路径；对应 SHA256 见下表。第三方地址不保证长期有效，
+     稳定部署建议自行转存到 GitHub Release / 对象存储）
    - insightface 模型包 `antelopev2` 放在 `~/.insightface/models/`（只需检测模型 `det_10g.onnx`）。
      若解压后多了一层目录，直接把 `antelopev2.zip` 放到 `~/.insightface/models/` 并运行
      `uv run python tools/fix_insightface_models.py` 自动解压/整理，完成后会校验检测模型就位
@@ -33,14 +38,14 @@ tools/          ONNX 导出脚本、旧 PG 迁移清单工具
 
 ## 启动方法与参数
 
-### 方式一：统一入口 start.py（推荐）
+### 统一入口 start.py（唯一启动方式）
 
 ```
 uv run python start.py
 ```
 
-流程：检测 npm → `npm install`（仅首次）→ `npm run build` 构建前端 → 启动 `uvicorn app:app`。
-Windows 双击/命令行可用 `start.bat`，POSIX shell 可用 `./start.sh`（均为 start.py 薄封装）。
+流程：检测 npm → `npm install`（仅首次）→ `npm run build` 构建前端 → 用当前 venv 解释器启动 `uvicorn app:app`。
+生产服务器上通常配合 `--skip-build`（前端在开发机构建/更新）+ supervisor/systemd 守护。
 
 **start.py 自身参数：**
 
@@ -61,14 +66,14 @@ uv run python start.py --skip-build --root-path /face
 uv run python start.py --log-level warning
 ```
 
-### 方式二：直接 uvicorn（前端已构建好时）
+### 直接 uvicorn（可选，前端已构建好时）
 
 ```
 uv run uvicorn app:app --host 0.0.0.0 --port 7860
 ```
 
-等价的还有 `uv run python app.py`（固定 7860 端口）。使用前需保证 `web/dist/` 已构建，
-或按第 3 步手动构建。
+使用前需保证 `web/dist/` 已构建（按第 3 步手动构建），否则只有 API 没有 Web 页面。
+生产部署建议统一走 start.py。
 
 ### 环境变量
 
@@ -76,6 +81,8 @@ uv run uvicorn app:app --host 0.0.0.0 --port 7860
 | --- | --- | --- |
 | `ADMIN_TOKEN` | 空 | 设置后 `/api/faces` 管理操作（查看/删除/别名/合并）必须携带 `X-Admin-Token` 请求头；上传、联想、识别、对比不受限；未设置时全站无鉴权 |
 | `SQLITE_DB_PATH` | `face_vector.db` | SQLite 数据库文件路径 |
+| `ADAFACE_ONNX_URL` | 空 | AdaFace 模型下载地址；设置后启动时若 `models/adaface_ir101_webface4m.onnx` 缺失会自动下载 |
+| `ADAFACE_SHA256` | 空 | 下载模型的 SHA256 校验值。`ADAFACE_ONNX_URL` 用上面现成地址时填 `d177da5864546e761579af1a91e308d7c868a32670f37e7b8b04628a78d7e5b5`；用本仓库 `tools/export_adaface_onnx.py` 自行导出的文件则填 `e87ddba2012035606da16cbf8adffe4b123f3280091a6c421264036a5629ded7` |
 
 ### 反代子路径部署示例
 
