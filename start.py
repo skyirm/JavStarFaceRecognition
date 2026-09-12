@@ -1,7 +1,7 @@
 """Unified cross-platform startup script: build frontend -> start backend server.
 
 Usage:
-    uv run python start.py [--skip-build] [--port 7860] [--bind-host 0.0.0.0] [--token TOKEN]
+    uv run python start.py [--skip-build] [--port 7860] [--host 0.0.0.0] [--token TOKEN]
 
 Works identically on Windows / Linux / macOS (start.bat / start.sh are thin wrappers).
 """
@@ -25,7 +25,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Build frontend and start backend server")
     parser.add_argument("--skip-build", action="store_true", help="skip frontend build")
     parser.add_argument("--port", type=int, default=7860)
-    parser.add_argument("--bind-host", default="0.0.0.0")
+    parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--token", default="", help="ADMIN_TOKEN for management API")
     args, extra = parser.parse_known_args()  # extra args are forwarded to uvicorn
 
@@ -61,7 +61,7 @@ def main() -> None:
         code = run(
             [
                 "uv", "run", "uvicorn", "app:app",
-                "--host", args.bind_host,
+                "--host", args.host,
                 "--port", str(args.port),
                 *extra,
             ]

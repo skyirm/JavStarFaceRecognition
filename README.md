@@ -26,7 +26,9 @@ tools/          ONNX 导出脚本、旧 PG 迁移清单工具
    （Windows 上 insightface 需 VS Build Tools 编译）
 2. 放置模型文件：
    - `models/adaface_ir101_webface4m.onnx`（来源与导出方法见 `tools/export_adaface_onnx.py` 文档注释）
-   - insightface 模型包 `antelopev2` 放在 `~/.insightface/models/`（只需检测模型）
+   - insightface 模型包 `antelopev2` 放在 `~/.insightface/models/`（只需检测模型 `det_10g.onnx`）。
+     若解压后多了一层目录，直接把 `antelopev2.zip` 放到 `~/.insightface/models/` 并运行
+     `uv run python tools/fix_insightface_models.py` 自动解压/整理，完成后会校验检测模型就位
 3. 前端构建（仅开发机需要 Node）：`cd web && npm install && npm run build`
 
 ## 启动方法与参数
@@ -46,7 +48,7 @@ Windows 双击/命令行可用 `start.bat`，POSIX shell 可用 `./start.sh`（�
 | --- | --- | --- |
 | `--skip-build` | 关 | 跳过前端 npm install/build（要求 `web/dist/` 已存在） |
 | `--port` | `7860` | 服务监听端口 |
-| `--bind-host` | `0.0.0.0` | 监听地址 |
+| `--host` | `0.0.0.0` | 监听地址（与 uvicorn 一致） |
 | `--token` | 空 | 管理员令牌，设置后等价于环境变量 `ADMIN_TOKEN` |
 
 **其余参数原样透传给 uvicorn**，常用：
