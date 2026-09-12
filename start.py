@@ -3,7 +3,8 @@
 Usage:
     uv run python start.py [--skip-build] [--port 7860] [--host 0.0.0.0] [--token TOKEN]
 
-Works identically on Windows / Linux / macOS (start.bat / start.sh are thin wrappers).
+Works identically on Windows / Linux / macOS. This is the only startup entry;
+extra arguments are forwarded to uvicorn.
 """
 
 import argparse
