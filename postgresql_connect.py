@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from peewee import Model, PostgresqlDatabase,TextField,IntegerField
 from pgvector.peewee import VectorField
@@ -8,11 +10,11 @@ from model import FaceVectorModel
 logger = get_logger(__name__)
 
 db = PostgresqlDatabase(
-            'skyrim',
-            user='skyrim',
-            password='***REDACTED***',
-            host='***REDACTED***',
-            port=5432
+            os.environ.get("PG_DB", "skyrim"),
+            user=os.environ.get("PG_USER", ""),
+            password=os.environ.get("PG_PASSWORD", ""),
+            host=os.environ.get("PG_HOST", "127.0.0.1"),
+            port=int(os.environ.get("PG_PORT", "5432"))
         )
 
 class Item(Model):
