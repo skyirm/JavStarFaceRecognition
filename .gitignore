@@ -4,6 +4,8 @@ __pycache__
 .gradio/
 .venv/
 *.db
+*.db-shm
+*.db-wal
 node_modules/
 web/dist/
 models/

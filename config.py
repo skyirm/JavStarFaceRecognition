@@ -5,6 +5,9 @@ FACE_DETECT_THRESHOLD = 0.7
 # 初始值 0.5，以 validation.py 扫描结果为准
 SIMILARITY_THRESHOLD = 0.5
 
+# 每张脸返回的候选人数
+RECOGNIZE_TOP_K = 3
+
 # AdaFace IR-101 ONNX 模型路径（相对项目根目录）
 ADAFACE_ONNX_PATH = "models/adaface_ir101_webface4m.onnx"
 
