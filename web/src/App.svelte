@@ -27,27 +27,31 @@
 
 <div class="min-h-screen flex flex-col">
   <header class="h-16 bg-canvas-dark border-b border-hairline-dark sticky top-0 z-10">
-    <div class="max-w-5xl mx-auto h-full px-4 md:px-6 flex items-center gap-3">
+    <div
+      class="max-w-5xl mx-auto h-full flex items-center gap-3
+        pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-6"
+    >
       <div class="flex items-center gap-2 select-none">
         <svg viewBox="0 0 24 24" class="w-6 h-6 fill-primary" aria-hidden="true">
           <path d="M12 2 2 12l10 10 10-10L12 2Zm0 4.5L16.5 11 12 15.5 7.5 11 12 6.5Z" />
         </svg>
         <span class="text-primary text-lg font-bold tracking-wide">JavStar</span>
       </div>
-      <span class="text-hairline-dark">|</span>
-      <span class="text-sm text-muted-strong font-medium">人脸识别</span>
+      <span class="hidden sm:inline text-hairline-dark">|</span>
+      <span class="hidden sm:inline text-sm text-muted-strong font-medium">人脸识别</span>
       <a
         href="docs"
-        class="ml-auto text-sm font-medium text-muted hover:text-primary transition-colors"
+        class="ml-auto text-sm font-medium text-muted hover:text-primary transition-colors
+          py-2 -mr-1 px-1"
       >
         API 文档
       </a>
     </div>
   </header>
 
-  <main class="flex-1 w-full max-w-5xl mx-auto px-4 md:px-6 pt-8 pb-16 md:pt-12">
-    <section class="mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
+  <main class="flex-1 w-full max-w-5xl mx-auto px-4 md:px-6 pt-6 pb-16 md:pt-12">
+    <section class="mb-6 md:mb-8">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
         <span class="text-primary">人脸</span>识别引擎
       </h1>
       <p class="mt-2 text-sm text-muted">
@@ -55,7 +59,10 @@
       </p>
     </section>
 
-    <nav class="flex gap-1 border-b border-hairline-dark mb-6 overflow-x-auto">
+    <nav
+      class="sticky top-16 z-[5] bg-canvas-dark flex gap-1 border-b border-hairline-dark mb-6
+        overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0"
+    >
       {#each tabs as t (t.id)}
         <button
           class="relative px-4 h-11 text-sm font-medium whitespace-nowrap cursor-pointer transition-colors
@@ -82,7 +89,10 @@
   </main>
 
   <footer class="bg-surface-soft-light text-ink">
-    <div class="max-w-5xl mx-auto px-4 md:px-6 py-8 flex flex-col md:flex-row gap-2 md:items-center">
+    <div
+      class="max-w-5xl mx-auto px-4 md:px-6 pt-8 flex flex-col md:flex-row gap-2 md:items-center
+        pb-[max(2rem,env(safe-area-inset-bottom))]"
+    >
       <span class="text-sm font-semibold">JavStar Face Recognition</span>
       <span class="text-sm text-muted">本地人脸向量检索 · 数据不出本机</span>
       <span class="md:ml-auto text-xs text-muted">© 2026</span>

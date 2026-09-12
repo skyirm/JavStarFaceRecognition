@@ -112,7 +112,7 @@
     {/if}
   </div>
   <ImagePicker bind:files multiple label="上传人脸图片（可多选，需为单人照）" />
-  <button class="btn-primary self-start" onclick={submit} disabled={busy}>
+  <button class="btn-primary w-full sm:w-auto sm:self-start" onclick={submit} disabled={busy}>
     {busy ? (progress ? `上传中 ${progress}…` : '上传中…') : '上传'}
   </button>
   {#if needToken}

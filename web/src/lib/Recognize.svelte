@@ -62,7 +62,7 @@
 
 <div class="card">
   <ImagePicker bind:file label="上传图片" />
-  <button class="btn-primary self-start" onclick={run} disabled={!file || busy}>
+  <button class="btn-primary w-full sm:w-auto sm:self-start" onclick={run} disabled={!file || busy}>
     {busy ? '识别中…' : '开始识别'}
   </button>
   {#if error}
@@ -92,7 +92,7 @@
             </span>
           </div>
           {#if candidateLine(hit)}
-            <div class="mt-1 text-xs text-muted font-num">{candidateLine(hit)}</div>
+            <div class="mt-1 text-xs text-muted font-num break-words">{candidateLine(hit)}</div>
           {/if}
         </li>
       {/each}

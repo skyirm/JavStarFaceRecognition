@@ -114,8 +114,8 @@
               />
               <button
                 type="button"
-                class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60
-                  text-white text-xs leading-none cursor-pointer"
+                class="absolute top-0 right-0 w-7 h-7 rounded-full bg-black/60
+                  text-white text-sm leading-none cursor-pointer flex items-center justify-center"
                 title="移除"
                 onclick={(e) => {
                   e.preventDefault()

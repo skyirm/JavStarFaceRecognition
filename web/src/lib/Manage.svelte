@@ -110,6 +110,51 @@
   }
 </script>
 
+{#snippet aliasChips(p)}
+  {#if p.aliases.length}
+    <div class="flex flex-wrap gap-1.5">
+      {#each p.aliases as a (a)}
+        <span
+          class="inline-flex items-center gap-1 h-7 pl-3 pr-1 rounded-full
+            border border-hairline-dark bg-surface-elevated text-xs text-body"
+        >
+          {a}
+          <button
+            class="w-5 h-5 rounded-full text-muted hover:text-trading-down
+              cursor-pointer leading-none"
+            title="删除别名"
+            onclick={() => removeAlias(p.name, a)}
+          >×</button>
+        </span>
+      {/each}
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet aliasEditor(p)}
+  {#if aliasTarget === p.name}
+    <div class="flex flex-wrap gap-2 mt-1">
+      <input
+        type="text"
+        class="field-input !h-8 !py-0 text-xs flex-1 min-w-[9rem]"
+        bind:value={aliasInput}
+        onkeydown={saveAlias}
+        placeholder="输入别名（曾用名/艺名）"
+      />
+      <button class="btn-chip" onclick={() => saveAlias()}>保存</button>
+      <button class="btn-chip" onclick={closeAliasInput}>取消</button>
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet actions(p)}
+  <div class="flex flex-wrap gap-1.5">
+    <button class="btn-chip" onclick={() => openAliasInput(p.name)}>添加别名</button>
+    <button class="btn-chip" onclick={() => merge(p)}>合并</button>
+    <button class="btn-danger" onclick={() => del(p.name)}>删除</button>
+  </div>
+{/snippet}
+
 <div class="card">
   {#if needToken}
     <div class="msg msg-err">此页面需要管理员令牌（服务端已设置 ADMIN_TOKEN）</div>
@@ -135,7 +180,20 @@
       人脸库为空{query ? '，无匹配结果' : ''}
     </div>
   {:else}
-    <div class="rounded-lg border border-hairline-dark overflow-x-auto">
+    <div class="md:hidden flex flex-col gap-3">
+      {#each filtered as p (p.name)}
+        <div class="rounded-lg border border-hairline-dark p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-white font-medium min-w-0 truncate">{p.name}</span>
+            <span class="shrink-0 text-xs text-muted">{p.count} 向量</span>
+          </div>
+          {@render aliasChips(p)}
+          {@render aliasEditor(p)}
+          {@render actions(p)}
+        </div>
+      {/each}
+    </div>
+    <div class="hidden md:block rounded-lg border border-hairline-dark">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-xs font-medium text-muted border-b border-hairline-dark">
@@ -150,46 +208,13 @@
               <td class="px-4 py-3">
                 <div class="flex flex-col gap-1.5">
                   <span class="text-white font-medium">{p.name}</span>
-                  {#if p.aliases.length}
-                    <div class="flex flex-wrap gap-1.5">
-                      {#each p.aliases as a (a)}
-                        <span
-                          class="inline-flex items-center gap-1 h-7 pl-3 pr-1 rounded-full
-                            border border-hairline-dark bg-surface-elevated text-xs text-body"
-                        >
-                          {a}
-                          <button
-                            class="w-5 h-5 rounded-full text-muted hover:text-trading-down
-                              cursor-pointer leading-none"
-                            title="删除别名"
-                            onclick={() => removeAlias(p.name, a)}
-                          >×</button>
-                        </span>
-                      {/each}
-                    </div>
-                  {/if}
-                  {#if aliasTarget === p.name}
-                    <div class="flex gap-2 mt-1">
-                      <input
-                        type="text"
-                        class="field-input !h-8 !py-0 text-xs"
-                        bind:value={aliasInput}
-                        onkeydown={saveAlias}
-                        placeholder="输入别名（曾用名/艺名）"
-                      />
-                      <button class="btn-chip" onclick={() => saveAlias()}>保存</button>
-                      <button class="btn-chip" onclick={closeAliasInput}>取消</button>
-                    </div>
-                  {/if}
+                  {@render aliasChips(p)}
+                  {@render aliasEditor(p)}
                 </div>
               </td>
               <td class="px-4 py-3 text-right font-num text-body">{p.count}</td>
               <td class="px-4 py-3 text-right whitespace-nowrap">
-                <button class="btn-chip mr-1.5" onclick={() => openAliasInput(p.name)}>
-                  添加别名
-                </button>
-                <button class="btn-chip mr-1.5" onclick={() => merge(p)}>合并</button>
-                <button class="btn-danger" onclick={() => del(p.name)}>删除</button>
+                {@render actions(p)}
               </td>
             </tr>
           {/each}

@@ -32,18 +32,22 @@
     <ImagePicker bind:file={file1} label="图片 1" />
     <ImagePicker bind:file={file2} label="图片 2" />
   </div>
-  <button class="btn-primary self-start" onclick={run} disabled={busy || !file1 || !file2}>
+  <button
+    class="btn-primary w-full sm:w-auto sm:self-start"
+    onclick={run}
+    disabled={busy || !file1 || !file2}
+  >
     {busy ? '比对中…' : '开始比对'}
   </button>
   {#if error}
     <div class="msg msg-err">{error}</div>
   {/if}
   {#if similarity !== null}
-    <div class="rounded-lg border border-hairline-dark p-6">
-      <div class="flex items-baseline gap-4">
+    <div class="rounded-lg border border-hairline-dark p-4 sm:p-6">
+      <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <span class="text-xs font-medium text-muted">相似度</span>
         <span
-          class="font-num text-4xl font-bold tracking-tight
+          class="font-num text-3xl sm:text-4xl font-bold tracking-tight
             {similarity >= 0.75 ? 'text-trading-up' : 'text-trading-down'}"
         >
           {(similarity * 100).toFixed(1)}%
