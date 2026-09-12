@@ -74,7 +74,7 @@ uv run uvicorn app:app --host 0.0.0.0 --port 7860
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `ADMIN_TOKEN` | 空 | 设置后 `/api/faces*`（查看/上传/删除/别名/合并）必须携带 `X-Admin-Token` 请求头；未设置时管理接口无鉴权 |
+| `ADMIN_TOKEN` | 空 | 设置后 `/api/faces` 管理操作（查看/删除/别名/合并）必须携带 `X-Admin-Token` 请求头；上传、联想、识别、对比不受限；未设置时全站无鉴权 |
 | `SQLITE_DB_PATH` | `face_vector.db` | SQLite 数据库文件路径 |
 
 ### 反代子路径部署示例
@@ -82,20 +82,26 @@ uv run uvicorn app:app --host 0.0.0.0 --port 7860
 前端请求使用相对路径，部署在 `http://domain/face/` 下无需改代码：
 
 ```nginx
-location = /face { return 301 /face/; }   # 强制尾斜杠（前端为相对路径）
+rewrite ^/face$ /face/ permanent;        # 强制尾斜杠（前端为相对路径）
 
-location /face/ {
-    proxy_pass http://127.0.0.1:7860;     # 不带末尾 /，原样转发前缀
+location ^~ /face/ {
+    client_max_body_size 50m;            # 默认 1m 会挡住图片上传
+    proxy_pass http://127.0.0.1:7860/;   # 末尾 / 必须保留：nginx 剥离 /face/ 前缀，
+                                         # uvicorn --root-path 会自己拼回去
     proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
 
-后端启动时追加 `--root-path /face` 即可（路由与文档地址均自动适配）。
+后端启动时追加 `--root-path /face`（路由与文档地址均自动适配）。
+注意：uvicorn ≥0.36 的 `--root-path` 要求反代剥离前缀；若 `proxy_pass` 不带末尾 `/`
+（原样转发），后端会收到重复前缀（如 `/face/face/`）而 404。
 
 ## 鉴权与部署注意
 
-- **库管理鉴权**：见上表 `ADMIN_TOKEN`。`/api/recognize`、`/api/compare` 不受限。
-  前端在管理/上传页会自动提示输入令牌。
+- **库管理鉴权**：见上表 `ADMIN_TOKEN`。仅查看/删除/别名/合并等管理操作需要令牌；
+  上传人脸、识别、对比不受限。前端在管理页会自动提示输入令牌。
 - **只能单进程**：向量缓存在进程内存，禁止透传 `--workers N`。
 - 反代（nginx/caddy）终结 HTTPS；同源托管时无需 CORS。
 - 定期备份 `face_vector.db`（连同 -wal/-shm）。

@@ -155,9 +155,7 @@ async def list_faces():
     return [PersonInfo(**item) for item in db.find_all()]
 
 
-@app.get(
-    "/api/faces/suggest", response_model=NameSuggestion, dependencies=[Depends(require_admin)]
-)
+@app.get("/api/faces/suggest", response_model=NameSuggestion)
 async def suggest(q: str = ""):
     if not q:
         return NameSuggestion(suggestions=[])
@@ -213,7 +211,7 @@ async def merge_faces(body: MergeInput):
     return PersonInfo(**db.find_one_by_name(body.target))
 
 
-@app.post("/api/faces", response_model=PersonInfo, dependencies=[Depends(require_admin)])
+@app.post("/api/faces", response_model=PersonInfo)
 async def upload_face(name: str, file: UploadFile = File(...)):
     name = name.strip()
     if not name:
