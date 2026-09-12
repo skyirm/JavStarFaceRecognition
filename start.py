@@ -29,9 +29,6 @@ def main() -> None:
     parser.add_argument("--token", default="", help="ADMIN_TOKEN for management API")
     args, extra = parser.parse_known_args()  # extra args are forwarded to uvicorn
 
-    if shutil.which("uv") is None:
-        sys.exit("uv not found. Install it first: https://docs.astral.sh/uv/")
-
     dist = ROOT / "web" / "dist" / "index.html"
     if not args.skip_build:
         npm = shutil.which("npm")
@@ -60,7 +57,7 @@ def main() -> None:
     try:
         code = run(
             [
-                "uv", "run", "uvicorn", "app:app",
+                sys.executable, "-m", "uvicorn", "app:app",
                 "--host", args.host,
                 "--port", str(args.port),
                 *extra,
