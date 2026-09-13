@@ -14,19 +14,39 @@ detector = FaceAnalysis(name="antelopev2", allowed_modules=["detection"], provid
 detector.prepare(ctx_id=0, det_size=(640, 640))
 
 
+_THUMB_SIZE = 112
+_WEBP_QUALITY = 80
+
+
+def encode_thumb(aligned_bgr: np.ndarray) -> bytes | None:
+    """Aligned 112x112 BGR crop -> WebP bytes (for library preview)."""
+    ok, buf = cv2.imencode(".webp", aligned_bgr, [cv2.IMWRITE_WEBP_QUALITY, _WEBP_QUALITY])
+    return buf.tobytes() if ok else None
+
+
 def _face_vector(img: np.ndarray, face) -> np.ndarray:
-    aligned = norm_crop(img, face.kps, image_size=112)
+    aligned = norm_crop(img, face.kps, image_size=_THUMB_SIZE)
     return adaface.get(aligned)
 
 
-def get_face_vector_from_file(path: str) -> np.ndarray | None:
+def _face_data(img: np.ndarray, face) -> tuple[np.ndarray, bytes | None]:
+    aligned = norm_crop(img, face.kps, image_size=_THUMB_SIZE)
+    return adaface.get(aligned), encode_thumb(aligned)
+
+
+def get_face_data_from_file(path: str) -> tuple[np.ndarray, bytes | None] | None:
     img = _imread_unicode(path)
     if img is None:
         return None
     faces = detector.get(img)
     if len(faces) != 1 or faces[0]["det_score"] < FACE_DETECT_THRESHOLD:
         return None
-    return _face_vector(img, faces[0])
+    return _face_data(img, faces[0])
+
+
+def get_face_vector_from_file(path: str) -> np.ndarray | None:
+    data = get_face_data_from_file(path)
+    return data[0] if data else None
 
 
 def get_face_vector_from_array(img) -> list[np.ndarray] | None:
@@ -41,6 +61,12 @@ def get_vectors_from_faces(img: np.ndarray, faces) -> list[np.ndarray]:
     """Vectors for faces detected on the same image (det -> norm_crop -> AdaFace)."""
     img = np.ascontiguousarray(img, dtype=np.uint8)
     return [_face_vector(img, face) for face in faces]
+
+
+def get_face_data_from_faces(img: np.ndarray, faces) -> list[tuple[np.ndarray, bytes | None]]:
+    """(vector, webp thumb) pairs for faces detected on the same image."""
+    img = np.ascontiguousarray(img, dtype=np.uint8)
+    return [_face_data(img, face) for face in faces]
 
 
 def compare_vector(vector1, vector2) -> float:

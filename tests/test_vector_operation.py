@@ -55,6 +55,21 @@ def test_compare_vector_semantics(vec_a0):
     assert compare_vector(vec_a0, vec_a0) == compare_vector(vec_a0, vec_a0)
 
 
+def test_encode_thumb_webp():
+    import cv2
+
+    from vector_operation import encode_thumb
+
+    g = np.tile(np.linspace(0, 255, 112, dtype=np.uint8), (112, 1))
+    img = np.stack([g, g.T, g // 2], axis=-1)
+    thumb = encode_thumb(img)
+    assert thumb is not None
+    assert thumb[:4] == b"RIFF" and thumb[8:12] == b"WEBP"
+    assert len(thumb) < 8 * 1024
+    decoded = cv2.imdecode(np.frombuffer(thumb, np.uint8), cv2.IMREAD_COLOR)
+    assert decoded.shape == (112, 112, 3)
+
+
 def test_detection_result_fields():
     results = get_result_from_array(
         __import__("cv2").imdecode(

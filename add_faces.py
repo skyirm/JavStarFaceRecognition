@@ -4,7 +4,7 @@ from pathlib import Path
 
 from model import FaceVectorModel
 from sqlite_connect import SqliteConnection
-from vector_operation import get_face_vector_from_file
+from vector_operation import get_face_data_from_file
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 # 文件夹名支持 "主名,别名1,别名2"（全/半角逗号或分号分隔）
@@ -27,11 +27,11 @@ def register_person(db: SqliteConnection, raw_label: str, files, max_count: int,
     for file in files:
         if count >= max_count:
             break
-        vector = get_face_vector_from_file(str(file))
-        if vector is None:
+        data = get_face_data_from_file(str(file))
+        if data is None:
             print(f"  skip (no single face): {file.name}")
             continue
-        db.insert_one(FaceVectorModel(label=primary, vector=vector, count=1))
+        db.insert_one(FaceVectorModel(label=primary, vector=data[0], count=1, thumb=data[1]))
         count += 1
 
     # 其余名字并入主名：已有向量则合并，没有则仅登记别名

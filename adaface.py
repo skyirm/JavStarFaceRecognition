@@ -33,7 +33,7 @@ def _download_model() -> None:
     _MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = _MODEL_PATH.with_name(_MODEL_PATH.name + ".part")
     logger.info("Downloading AdaFace model from %s", url)
-    req = urllib.request.Request(url, headers={"User-Agent": "javstar-face/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "facefind/1.0"})
     with urllib.request.urlopen(req) as resp, open(tmp, "wb") as f:
         total = int(resp.headers.get("Content-Length") or 0)
         done = 0
@@ -81,6 +81,10 @@ def _get_session() -> ort.InferenceSession:
 def warmup() -> None:
     """Load the ONNX session eagerly so a missing model fails at startup."""
     _get_session()
+
+
+def is_loaded() -> bool:
+    return _session is not None
 
 
 def preprocess(aligned_bgr: np.ndarray) -> np.ndarray:

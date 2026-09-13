@@ -6,7 +6,7 @@ from random import shuffle
 from logger import get_logger
 from model import FaceVectorModel
 from sqlite_connect import SqliteConnection
-from vector_operation import get_face_vector_from_file
+from vector_operation import get_face_data_from_file
 
 
 def main():
@@ -41,10 +41,12 @@ def main():
                     break
                 if name not in str(file):
                     continue
-                vector = get_face_vector_from_file(str(file))
-                if vector is None:
+                data = get_face_data_from_file(str(file))
+                if data is None:
                     continue
-                db.insert_one(FaceVectorModel(label=name, vector=vector, count=1))
+                db.insert_one(
+                    FaceVectorModel(label=name, vector=data[0], count=1, thumb=data[1])
+                )
                 count += 1
                 logger.info("Add face for %s from %s", name, file)
             counts[name] = count

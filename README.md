@@ -1,4 +1,4 @@
-# JavStar Face Recognition
+# FaceFind · 人脸识别
 
 人脸识别服务：AdaFace IR-101（ONNX）+ SCRFD 检测 + SQLite 向量库 + FastAPI 后端 + Svelte 5 前端。
 
@@ -6,12 +6,17 @@
 
 ```
 web/            Svelte 5 + Vite 前端（构建产物 dist/ 由后端托管）
-app.py          FastAPI 后端：/api/recognize /api/faces /api/faces/suggest /api/compare
+app.py          FastAPI 后端：/api/recognize /api/faces（分页+搜索） /api/faces/suggest /api/compare
                 /api/faces/{name}/aliases（别名增删） /api/faces/merge（人员合并）
+                /api/faces/{name}/thumbs（向量 WebP 预览） /api/faces/{name}/vectors/{id}（删单条向量）
+                /api/faces/issues（库体检：跨名重复/同名离群） /api/history（识别历史，可筛选/清理）
+                /api/library/export|import（人脸库 zip 导出导入，换机迁移；历史不随库迁移）
+                /api/health（存活+模型+库统计，监控用，无鉴权）
 vector_operation.py  SCRFD 检测 + 五点对齐(norm_crop 112) + AdaFace 向量
 adaface.py      AdaFace ONNX 推理封装（arena 关闭、单例）
 sqlite_connect.py    SQLite 向量库（v2: 一人多向量，检索取 per-name max；
-                alias 表支持一人多名，写入时自动解析为主名）
+                alias 表支持一人多名，写入时自动解析为主名；
+                recognize_log 表记录识别历史，FIFO 上限见 config）
 config.py       阈值与路径配置
 add_faces.py    从每人一个目录的图片重建人脸库
 validation.py   阈值扫描（支持 --baseline 与旧方案对比）

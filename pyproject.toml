@@ -1,13 +1,13 @@
 [project]
-name = "javstar-face-recognition"
+name = "facefind"
 version = "1.0.0"
 description = "人脸识别服务：AdaFace IR-101 (ONNX) + SCRFD 检测 + SQLite 向量库 + FastAPI 后端"
 requires-python = ">=3.12"
 dependencies = [
-    "numpy>=1.26,<2",
+    "numpy>=1.26,<3",
     "opencv-python>=4.10,<5",
     "onnxruntime>=1.19",
-    "insightface==0.7.3",
+    "insightface==2.0",
     "fastapi>=0.111",
     "uvicorn[standard]>=0.30",
     "python-multipart>=0.0.9",

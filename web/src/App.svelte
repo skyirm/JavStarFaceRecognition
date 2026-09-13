@@ -3,12 +3,14 @@
   import UploadFace from './lib/UploadFace.svelte'
   import Compare from './lib/Compare.svelte'
   import Manage from './lib/Manage.svelte'
+  import History from './lib/History.svelte'
 
   const tabs = [
     { id: 'recognize', label: '人脸识别' },
     { id: 'upload', label: '上传人脸' },
     { id: 'compare', label: '人脸比对' },
-    { id: 'manage', label: '人脸库管理' }
+    { id: 'manage', label: '人脸库管理' },
+    { id: 'history', label: '识别历史' }
   ]
 
   let active = $state('recognize')
@@ -35,7 +37,7 @@
         <svg viewBox="0 0 24 24" class="w-6 h-6 fill-primary" aria-hidden="true">
           <path d="M12 2 2 12l10 10 10-10L12 2Zm0 4.5L16.5 11 12 15.5 7.5 11 12 6.5Z" />
         </svg>
-        <span class="text-primary text-lg font-bold tracking-wide">JavStar</span>
+        <span class="text-primary text-lg font-bold tracking-wide">FaceFind</span>
       </div>
       <span class="hidden sm:inline text-hairline-dark">|</span>
       <span class="hidden sm:inline text-sm text-muted-strong font-medium">人脸识别</span>
@@ -83,17 +85,19 @@
       <UploadFace />
     {:else if active === 'compare'}
       <Compare />
-    {:else}
+    {:else if active === 'manage'}
       <Manage />
+    {:else}
+      <History />
     {/if}
   </main>
 
-  <footer class="bg-surface-soft-light text-ink">
+  <footer class="bg-surface-card border-t border-hairline-dark">
     <div
       class="max-w-5xl mx-auto px-4 md:px-6 pt-8 flex flex-col md:flex-row gap-2 md:items-center
         pb-[max(2rem,env(safe-area-inset-bottom))]"
     >
-      <span class="text-sm font-semibold">JavStar Face Recognition</span>
+      <span class="text-sm font-semibold text-white">FaceFind 人脸识别</span>
       <span class="text-sm text-muted">本地人脸向量检索 · 数据不出本机</span>
       <span class="md:ml-auto text-xs text-muted">© 2026</span>
     </div>

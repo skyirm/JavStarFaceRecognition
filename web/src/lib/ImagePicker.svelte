@@ -1,3 +1,37 @@
+<script module>
+  // ---- clipboard paste routing (shared across all instances) ----
+  // Paste goes to the picker the user interacted with last; before any
+  // interaction it falls back to the first mounted picker on the page.
+  const acceptors = new Set()
+  let active = null
+
+  function fileFromClipboard(dt) {
+    if (!dt) return null
+    for (const item of dt.items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const raw = item.getAsFile()
+        if (raw) {
+          const ext = raw.type.split('/')[1] || 'png'
+          return new File([raw], `clipboard_${Date.now()}.${ext}`, { type: raw.type })
+        }
+      }
+    }
+    return null
+  }
+
+  if (typeof window !== 'undefined' && !window.__facePasteBound) {
+    window.__facePasteBound = true
+    window.addEventListener('paste', (e) => {
+      const target = active ?? [...acceptors][0]
+      if (!target) return
+      const file = fileFromClipboard(e.clipboardData)
+      if (!file) return
+      e.preventDefault()
+      target(file)
+    })
+  }
+</script>
+
 <script>
   let {
     label = '选择图片',
@@ -76,6 +110,23 @@
     if (!e.currentTarget.contains(e.relatedTarget)) dragging = false
   }
 
+  function accept(f) {
+    if (multiple) addFiles([f])
+    else setFile(f)
+  }
+
+  function onpointerdown() {
+    active = accept
+  }
+
+  $effect(() => {
+    acceptors.add(accept)
+    return () => {
+      acceptors.delete(accept)
+      if (active === accept) active = null
+    }
+  })
+
   $effect(() => {
     if (!file && url) {
       URL.revokeObjectURL(url)
@@ -94,6 +145,7 @@
     ondragover={ondragover}
     ondragleave={ondragleave}
     ondrop={ondrop}
+    onpointerdown={onpointerdown}
   >
     <input
       type="file"
@@ -125,26 +177,26 @@
             </div>
           {/each}
         </div>
-        <span class="text-xs text-muted">点击继续添加或拖入图片，共 {files.length} 张</span>
+        <span class="text-xs text-muted">点击继续添加、拖入或 Ctrl+V 粘贴，共 {files.length} 张</span>
       {:else}
         <svg viewBox="0 0 24 24" class="w-7 h-7 fill-muted-strong" aria-hidden="true">
           <path
             d="M11 16V7.8l-3.6 3.6L6 10l6-6 6 6-1.4 1.4L13 7.8V16h-2Zm-6 4v-4h2v2h10v-2h2v4H5Z"
           />
         </svg>
-        <span class="text-sm text-body">点击选择或拖入图片（可多选）</span>
+        <span class="text-sm text-body">点击选择、拖入或 Ctrl+V 粘贴（可多选）</span>
         <span class="text-xs text-muted">支持 JPG / PNG / WebP，≤ 50MB</span>
       {/if}
     {:else if url}
       <img src={url} alt="预览" class="max-h-48 rounded-md border border-hairline-dark" />
-      <span class="text-xs text-muted">点击更换或拖入图片</span>
+      <span class="text-xs text-muted">点击更换、拖入或 Ctrl+V 粘贴</span>
     {:else}
       <svg viewBox="0 0 24 24" class="w-7 h-7 fill-muted-strong" aria-hidden="true">
         <path
           d="M11 16V7.8l-3.6 3.6L6 10l6-6 6 6-1.4 1.4L13 7.8V16h-2Zm-6 4v-4h2v2h10v-2h2v4H5Z"
         />
       </svg>
-      <span class="text-sm text-body">点击选择或拖入图片</span>
+      <span class="text-sm text-body">点击选择、拖入或 Ctrl+V 粘贴</span>
       <span class="text-xs text-muted">支持 JPG / PNG / WebP，≤ 50MB</span>
     {/if}
   </label>
